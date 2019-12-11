@@ -152,12 +152,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConnectDB.cpp" />
-    <ClCompile Include="DALT.cpp" />
-    <ClCompile Include="menu.cpp" />
+    <ClCompile Include="list.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="table.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConnectDB.h" />
-    <ClInclude Include="menu.h" />
+    <ClInclude Include="list.h" />
+    <ClInclude Include="table.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

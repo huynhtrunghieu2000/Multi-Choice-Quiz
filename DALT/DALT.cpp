@@ -4,8 +4,11 @@
 #include <iostream>
 #include<stdlib.h>
 #include "menu.h"
+#include "ConnectDB.h"
 using namespace std;
-
 int main() {
-	mainMenu ();
+	database db;
+	db.init();
+	db.execute(1);
+	db.close();
 	}

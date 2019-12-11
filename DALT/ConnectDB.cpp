@@ -2,34 +2,25 @@
 #include "ConnectDB.h"
 //use the std namespace
 using namespace std;
-void Database() {
-	int question = 1;
-
-	//define handles and variables
-	SQLHANDLE sqlConnHandle;
-	SQLHANDLE sqlStmtHandle;
-	SQLHANDLE sqlEnvHandle;
-	SQLWCHAR retconstring[SQL_RETURN_CODE_LEN];
-
+void database::init() {
 	//initializations
 	sqlConnHandle = NULL;
 	sqlStmtHandle = NULL;
-
 	//allocations
 	if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlEnvHandle))
-		goto COMPLETED;
+		close();
 
 	if (SQL_SUCCESS != SQLSetEnvAttr(sqlEnvHandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0))
-		goto COMPLETED;
+		close();
 
 	if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlEnvHandle, &sqlConnHandle))
-		goto COMPLETED;
+		close();
 
 	//output
-	cout << "Attempting connection to SQL Server...";
+	cout << "Loading...";
 	cout << "\n";
 
-	//connect to SQL Server
+	//connect to SQL Server	
 	//I am using a trusted connection and port 14808
 	//it does not matter if you are using default or named instance
 	//just make sure you define the server name and the port
@@ -37,8 +28,8 @@ void Database() {
 	//but is more secure to use a trusted connection
 	switch (SQLDriverConnect(sqlConnHandle,
 		NULL,
-		(SQLWCHAR*)L"DRIVER={SQL Server};SERVER=ADMIN;DATABASE=qlGiaoHang;UID=sa;PWD=123;",
-		//(SQLWCHAR*)L"DRIVER={SQL Server};SERVER=localhost, 1433;DATABASE=master;Trusted=true;",
+		//(SQLWCHAR*)L"DRIVER={SQL Server};SERVER=localhost, 1433;DATABASE=master;UID=username;PWD=password;",
+		(SQLWCHAR*)L"DRIVER={SQL Server};SERVER=ADMIN;DATABASE=Multi-Choice-Quiz;Trusted=true;UID=sa;PWD=123",
 		SQL_NTS,
 		retconstring,
 		1024,
@@ -58,12 +49,14 @@ void Database() {
 	case SQL_INVALID_HANDLE:
 		cout << "Could not connect to SQL Server";
 		cout << "\n";
-		goto COMPLETED;
+		close();
+		break;
 
 	case SQL_ERROR:
 		cout << "Could not connect to SQL Server";
 		cout << "\n";
-		goto COMPLETED;
+		close();
+		break;
 
 	default:
 		break;
@@ -71,48 +64,58 @@ void Database() {
 
 	//if there is a problem connecting then exit application
 	if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlConnHandle, &sqlStmtHandle))
-		goto COMPLETED;
+		close();
 
+}
+
+void database::execute(int question) {
 	//output
+	
+	SQLCHAR sqlVersion[SQL_RESULT_LEN];
+	SQLINTEGER ptrSqlVersion;
 	cout << "\n";
-	cout << "Executing T-SQL query...";
+	cout << "Loading...";
 	cout << "\n";
-	cout << "You choice the sql command to execute: 1.SELECT, 2.INSERT, 3.UPDATE, 4.DELETE:";
-	cin >> question;
 	switch (question)
 	{
 	case 1:
 		//if there is a problem executing the query then exit application
 		//else display query result
-		if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"SELECT * from TAIKHOAN WHERE sotien>= all (select sotien from taikhoan)", SQL_NTS)) {
+		if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"SELECT * FROM cauhoi", SQL_NTS)) {
 			cout << "Error querying SQL Server";
 			cout << "\n";
-			goto COMPLETED;
+			close();
 		}
 		else {
-			char sotk[4];
-			int sotien;
-			cout << "TAI KHOAN CO SO TIEN CAO NHAT:" << "\n";
+			//Lay tat ca du lieu trong cauhoi
+			char NoiDung[500];
+			char DapAn1[100];
+			char DapAn2[100];
+			char DapAn3[100];
+			char DapAn4[100];
 			while (SQLFetch(sqlStmtHandle) == SQL_SUCCESS)
 			{
-				SQLGetData(sqlStmtHandle, 1, SQL_C_CHAR, sotk, 4, NULL);
-				SQLGetData(sqlStmtHandle, 2, SQL_C_LONG, &sotien, 4, NULL);
+				SQLGetData(sqlStmtHandle, 2, SQL_C_CHAR, NoiDung, 500, NULL);
+				SQLGetData(sqlStmtHandle, 3, SQL_C_CHAR, DapAn1, 50, NULL);
+				SQLGetData(sqlStmtHandle, 4, SQL_C_CHAR, DapAn2, 50, NULL);
+				SQLGetData(sqlStmtHandle, 5, SQL_C_CHAR, DapAn3, 50, NULL);
+				SQLGetData(sqlStmtHandle, 6, SQL_C_CHAR, DapAn4, 50, NULL);
 
-				cout << sotk << " " << sotien << endl;
+				cout << NoiDung << endl <<"1."<< DapAn1 << endl<< "2." << DapAn2<<endl<< "3." << DapAn3<<endl<< "4." << DapAn4<<endl;
+
 			}
 			break;
-	case 2: //Insert
+	case 2: //Them du lieu vao database 
 		if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"insert into RUT values (2, '11', 30)", SQL_NTS)) {
 			cout << "Error querying SQL Server";
 			cout << "\n";
-			goto COMPLETED;
+			close();
 		}
 		break;
 		}
 	}
-
-	//close connection and free resources
-COMPLETED:
+}
+void database::close() {
 	SQLFreeHandle(SQL_HANDLE_STMT, sqlStmtHandle);
 	SQLDisconnect(sqlConnHandle);
 	SQLFreeHandle(SQL_HANDLE_DBC, sqlConnHandle);

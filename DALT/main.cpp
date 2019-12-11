@@ -1,7 +1,21 @@
-#include <iostream> 
-#include "menu.h"
+#include <iostream>
+#include "ConnectDB.h"
+#include "list.h"
+#include "table.h"
+#include <string>
+
 using namespace std;
-void mainMenu() {
+void menuGiaoVien();
+void menuSinhVien();
+database db;
+int main() {
+	cauhoi c1;
+	List<cauhoi> l;
+	l.addTail(c1);
+	cin >> c1;
+	cout << c1;
+	db.init();
+	
 	int questions = 0;
 	cout << "1. Danh cho Giang vien " << endl;
 	cout << "2. Danh cho Thi sinh " << endl;
@@ -19,6 +33,7 @@ void mainMenu() {
 		break;
 	case 3:
 		exit(1);
+		db.close();
 	}
 }
 void menuGiaoVien() {
@@ -39,7 +54,7 @@ void menuGiaoVien() {
 		cout << " Danh Sach Diem Thi :" << endl;
 		break;
 	case 3:
-		mainMenu();
+		main();
 		break;
 	}
 }
@@ -55,13 +70,14 @@ void menuSinhVien() {
 	switch (questions)
 	{
 	case 1:
-		cout << " Ma De:" << endl;
+		cout << " Cau Hoi:" << endl;
+		db.execute(1);
 		break;
 	case 2:
 		cout << " Nhap Ma So Sinh Vien Cua Ban:" << endl;
 		break;
 	case 3:
-		mainMenu();
+		main();
 		break;
 	}
 }
